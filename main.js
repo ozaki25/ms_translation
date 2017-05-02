@@ -27,10 +27,13 @@
                 self.accessToken = data
                 self.translate()
             }).fail(function() {
-                console.log('fail issue access token')
+                logger.log('fail issue access token')
             })
         },
         translate: function() {
+            // Ajaxだとcors問題発生
+            // 公式でもscriptタグ埋め込めと言っている
+            // https://msdn.microsoft.com/ja-jp/library/ff512385.aspx
             var self = this
             var text = $('#text').text()
             var src = 'http://api.microsofttranslator.com/V2/Ajax.svc/Translate' +
@@ -40,35 +43,9 @@
                 '&text=' + text +
                 '&oncomplete=onTranslate'
             $('<script>').attr({ 'src': src, 'id': 'script-translation' }).data('translation', self).appendTo('body')
-
-            /*
-            // Ajaxだとcors問題発生
-            // 公式でもscriptタグ埋め込めと言っている
-            // https://msdn.microsoft.com/ja-jp/library/ff512385.aspx
-            var self = this
-            var text = $('#text').text()
-            $.ajax({
-                type: 'GET',
-                url: 'https://api.microsofttranslator.com/V2/Http.svc/Translate',
-                category: 'generalnn',
-                headers: {
-                    'Authorization': 'Bearer ' + self.accessToken
-                },
-                data: {
-                    from: self.from,
-                    to: self.to,
-                    text: text
-                }
-            }).done(function(data) {
-                console.log(data)
-            }).fail(function(e) {
-                console.log(e)
-                console.log('fail translate')
-            })
-            */
         },
         rewrite: function(result) {
-            $('#result').text(result)
+            $('#text').text(result)
         }
     }
 
