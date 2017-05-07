@@ -60,10 +60,13 @@
             var subscriptionKey = $('#subscription-key').val().trim()
             if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey })
         })
+        $(document).on('translate', function(e, self, data) {
+            self.rewrite(data)
+        })
     })
 }(jQuery)
 
 function onTranslate(data) {
     var translation = $('#script-translation').data('translation')
-    translation.rewrite(data)
+    $(document).trigger('translate', [translation, data])
 }
