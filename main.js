@@ -33,19 +33,24 @@
         translate: function() {
             // Ajaxだとcors問題発生
             // 公式でもscriptタグ埋め込めと言っている
-            // https://msdn.microsoft.com/ja-jp/library/ff512385.aspx
+            // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx
             var self = this
             var text = $('#text').text()
-            var src = 'http://api.microsofttranslator.com/V2/Ajax.svc/Translate' +
+            var texts = '["こんにちは", "私はポー太郎です", "私はポー太郎ではありません"]'
+            var src = 'http://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
                 '?appId=Bearer ' + self.accessToken +
                 '&from=' + self.from +
                 '&to=' + self.to +
-                '&text=' + text +
+                '&texts=' + texts +
+                '&categoryID=generalNN' +
                 '&oncomplete=onTranslate'
             $('<script>').attr({ 'src': src, 'id': 'script-translation' }).data('translation', self).appendTo('body')
         },
-        rewrite: function(result) {
-            $('#text').text(result)
+        rewrite: function(results) {
+            var resultText = $.map(results, function(result) {
+                return result.TranslatedText
+            }).join(', ')
+            $('#text').text(resultText)
         }
     }
 
@@ -69,4 +74,5 @@
 function onTranslate(data) {
     var translation = $('#script-translation').data('translation')
     $(document).trigger('translate', [translation, data])
+    $('#script-translation').remove()
 }
