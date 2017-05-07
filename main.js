@@ -1,7 +1,7 @@
 +function($) {
     'use strict'
 
-    var logger = window.console && window.log ? window.console : { log: function(){ } }
+    var logger = window.console && window.console.log ? window.console : { log: function(){ } }
 
     var Translation = function(options) {
         options = options || {}
