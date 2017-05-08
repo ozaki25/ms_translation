@@ -50,15 +50,10 @@
             $('<script>').attr({ 'src': src, 'id': 'script-translation' }).data('translation', self).appendTo('body')
         },
         rewrite: function(results) {
-            var self = this
-            var i = 0
-            self.textNodeList.each(function() {
-                this.nodeValue = results[i].TranslatedText
-                i++
-            })
-            self.inputNodeList.each(function() {
-                this.value = results[i].TranslatedText
-                i++
+            this.nodeList.forEach(function(node, i) {
+                node.nodeType === 3 ?
+                    node.nodeValue = results[i].TranslatedText :
+                    node.value     = results[i].TranslatedText
             })
         },
         getTargetSelector: function() {
@@ -66,21 +61,18 @@
         },
         setTargetNode: function() {
             var selector = this.getTargetSelector()
-            this.textNodeList = $(selector).contents().filter(function() {
+            var textNodeList = $(selector).contents().filter(function() {
                 return this.nodeType === 3 && !!this.nodeValue.trim()
             })
-            this.inputNodeList = $('input').filter(function() {
+            var inputNodeList = $('input').filter(function() {
                 return this.type === 'button' && !!this.value.trim()
             })
+            this.nodeList = textNodeList.toArray().concat(inputNodeList.toArray())
         },
         getTargetText: function() {
-            var textNodeText = this.textNodeList.map(function() {
-                return '"' + this.nodeValue + '"'
-            })
-            var inputNodeText = this.inputNodeList.map(function() {
-                return '"' + this.value + '"'
-            })
-            return textNodeText.toArray().concat(inputNodeText.toArray()).join(',')
+            return this.nodeList.map(function(node) {
+                return '"' + (node.nodeType === 3 ? node.nodeValue : node.value) + '"'
+            }).join(',')
         },
     }
 
