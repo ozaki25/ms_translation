@@ -11,6 +11,8 @@
         this.excute()
     }
 
+    Translation.targetSelector = 'body *'
+
     Translation.prototype = {
         excute: function() {
             this.issueAccessToken()
@@ -23,6 +25,7 @@
                 headers: {
                     'Ocp-Apim-Subscription-Key': self.subscriptionKey
                 },
+                timeout: 10000,
             }).done(function(data) {
                 self.accessToken = data
                 self.translate()
@@ -35,6 +38,7 @@
             // 公式でもscriptタグ埋め込めと言っている
             // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx
             var self = this
+            self.setTargetNode()
             var texts = '[' + self.getTargetTexts() + ']'
             var src = 'http://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
                 '?appId=Bearer ' + self.accessToken +
@@ -46,18 +50,25 @@
             $('<script>').attr({ 'src': src, 'id': 'script-translation' }).data('translation', self).appendTo('body')
         },
         rewrite: function(results) {
-            var resultText = results.map(function(result) {
-                return result.TranslatedText
-            }).join(', ')
-            $('#result').text(resultText)
+            var self = this
+            results.forEach(function(result, i) {
+                self.nodeList[i].nodeValue = result.TranslatedText
+            })
+        },
+        getTargetSelector: function() {
+            return Translation.targetSelector
+        },
+        setTargetNode: function() {
+            var selector = this.getTargetSelector()
+            this.nodeList = $(selector).contents().filter(function() {
+                return this.nodeType === 3 && !!this.nodeValue.trim()
+            })
         },
         getTargetTexts: function() {
-            return $('body *').contents().filter(function() {
-                return this.nodeType === 3 && !!this.nodeValue.trim()
-            }).map(function() {
+            return this.nodeList.map(function() {
                 return '"' + this.nodeValue + '"'
             }).toArray().join(',')
-        }
+        },
     }
 
     function Plugin(options) {
