@@ -25,11 +25,11 @@
                 headers: {
                     'Ocp-Apim-Subscription-Key': self.subscriptionKey
                 },
-                timeout: 10000,
-            }).done(function(data) {
+                timeout: 10000
+            }).success(function(data) {
                 self.accessToken = data
                 self.translate()
-            }).fail(function() {
+            }).error(function() {
                 logger.log('fail issue access token')
             })
         },
@@ -66,10 +66,10 @@
         setTargetNode: function() {
             var selector = this.getTargetSelector()
             var textNodeList = $(selector).contents().filter(function() {
-                return this.nodeType === 3 && !!this.nodeValue.trim()
+                return this.nodeType === 3 && !!$.trim(this.nodeValue)
             })
             var inputNodeList = $('input').filter(function() {
-                return this.type === 'button' && !!this.value.trim()
+                return this.type === 'button' && !!$.trim(this.value)
             })
             this.nodeList = textNodeList.toArray().concat(inputNodeList.toArray())
         },
@@ -77,7 +77,7 @@
             return this.nodeList.map(function(node) {
                 return '"' + (node.nodeType === 3 ? node.nodeValue : node.value) + '"'
             }).join(',')
-        },
+        }
     }
 
     function Plugin(options) {
@@ -88,11 +88,11 @@
 
     $(function() {
         $('#from-en-to-ja').bind('click', function() {
-            var subscriptionKey = $('#subscription-key').val().trim()
+            var subscriptionKey = $.trim($('#subscription-key').val())
             if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'en', to: 'ja' })
         })
         $('#from-ja-to-en').bind('click', function() {
-            var subscriptionKey = $('#subscription-key').val().trim()
+            var subscriptionKey = $.trim($('#subscription-key').val())
             if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'ja', to: 'en' })
         })
         $(document).bind('translate', function(e, self, data) {
