@@ -51,8 +51,14 @@
         },
         rewrite: function(results) {
             var self = this
-            results.forEach(function(result, i) {
-                self.nodeList[i].nodeValue = result.TranslatedText
+            var i = 0
+            self.textNodeList.each(function() {
+                this.nodeValue = results[i].TranslatedText
+                i++
+            })
+            self.inputNodeList.each(function() {
+                this.value = results[i].TranslatedText
+                i++
             })
         },
         getTargetSelector: function() {
@@ -60,14 +66,21 @@
         },
         setTargetNode: function() {
             var selector = this.getTargetSelector()
-            this.nodeList = $(selector).contents().filter(function() {
+            this.textNodeList = $(selector).contents().filter(function() {
                 return this.nodeType === 3 && !!this.nodeValue.trim()
+            })
+            this.inputNodeList = $('input').filter(function() {
+                return this.type === 'button' && !!this.value.trim()
             })
         },
         getTargetText: function() {
-            return this.nodeList.map(function() {
+            var textNodeText = this.textNodeList.map(function() {
                 return '"' + this.nodeValue + '"'
-            }).toArray().join(',')
+            })
+            var inputNodeText = this.inputNodeList.map(function() {
+                return '"' + this.value + '"'
+            })
+            return textNodeText.toArray().concat(inputNodeText.toArray()).join(',')
         },
     }
 
