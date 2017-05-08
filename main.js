@@ -40,12 +40,13 @@
             var self = this
             self.setTargetNode()
             var texts = '[' + self.getTargetText() + ']'
+            var options = '{"Category": "generalnn"}'
             var src = 'http://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
                 '?appId=Bearer ' + self.accessToken +
                 '&from=' + self.from +
                 '&to=' + self.to +
                 '&texts=' + texts +
-                '&categoryID=generalNN' +
+                '&options=' + options +
                 '&oncomplete=translated'
             $('<script>').attr({ 'src': src, 'id': 'script-translation' }).data('translation', self).appendTo('body')
         },
