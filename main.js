@@ -35,8 +35,7 @@
             // 公式でもscriptタグ埋め込めと言っている
             // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx
             var self = this
-            var text = $('#text').text()
-            var texts = '["こんにちは", "私はポー太郎です", "私はポー太郎ではありません"]'
+            var texts = '[' + self.getTargetTexts() + ']'
             var src = 'http://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
                 '?appId=Bearer ' + self.accessToken +
                 '&from=' + self.from +
@@ -47,10 +46,17 @@
             $('<script>').attr({ 'src': src, 'id': 'script-translation' }).data('translation', self).appendTo('body')
         },
         rewrite: function(results) {
-            var resultText = $.map(results, function(result) {
+            var resultText = results.map(function(result) {
                 return result.TranslatedText
             }).join(', ')
-            $('#text').text(resultText)
+            $('#result').text(resultText)
+        },
+        getTargetTexts: function() {
+            return $('body *').contents().filter(function() {
+                return this.nodeType === 3 && !!this.nodeValue.trim()
+            }).map(function() {
+                return '"' + this.nodeValue + '"'
+            }).toArray().join(',')
         }
     }
 
