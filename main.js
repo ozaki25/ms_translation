@@ -6,8 +6,8 @@
     var Translation = function(options) {
         options = options || {}
         this.subscriptionKey = options.subscriptionKey
-        this.from = 'ja'
-        this.to = 'en'
+        this.from = options.from || 'ja'
+        this.to = options.to || 'en'
         this.excute()
     }
 
@@ -39,14 +39,14 @@
             // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx
             var self = this
             self.setTargetNode()
-            var texts = '[' + self.getTargetTexts() + ']'
+            var texts = '[' + self.getTargetText() + ']'
             var src = 'http://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
                 '?appId=Bearer ' + self.accessToken +
                 '&from=' + self.from +
                 '&to=' + self.to +
                 '&texts=' + texts +
                 '&categoryID=generalNN' +
-                '&oncomplete=onTranslate'
+                '&oncomplete=translated'
             $('<script>').attr({ 'src': src, 'id': 'script-translation' }).data('translation', self).appendTo('body')
         },
         rewrite: function(results) {
@@ -64,7 +64,7 @@
                 return this.nodeType === 3 && !!this.nodeValue.trim()
             })
         },
-        getTargetTexts: function() {
+        getTargetText: function() {
             return this.nodeList.map(function() {
                 return '"' + this.nodeValue + '"'
             }).toArray().join(',')
@@ -78,9 +78,13 @@
     $.translation = Plugin
 
     $(function() {
-        $('#start').on('click', function() {
+        $('#from-en-to-ja').on('click', function() {
             var subscriptionKey = $('#subscription-key').val().trim()
-            if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey })
+            if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'en', to: 'ja' })
+        })
+        $('#from-ja-to-en').on('click', function() {
+            var subscriptionKey = $('#subscription-key').val().trim()
+            if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'ja', to: 'en' })
         })
         $(document).on('translate', function(e, self, data) {
             self.rewrite(data)
@@ -88,7 +92,7 @@
     })
 }(jQuery)
 
-function onTranslate(data) {
+function translated(data) {
     var translation = $('#script-translation').data('translation')
     $(document).trigger('translate', [translation, data])
     $('#script-translation').remove()
