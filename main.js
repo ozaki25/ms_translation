@@ -48,13 +48,16 @@
                 '&texts=' + texts +
                 '&options=' + options +
                 '&oncomplete=translated'
-            $('<script>').attr({ 'src': src, 'id': 'script-translation' }).data('translation', self).appendTo('body')
+            $('<script>').attr({ 'id': 'translation-script', 'type': 'text/javascript', 'src': src }).data('translation', self).appendTo('body')
+            // Tlanslationオブジェクトを使い回すために埋め込む
+            // scriptタグの属性に入れてもよかったけどjquery1.6.4だとappendしたscriptタグが見えないためわざわざ別のタグで埋め込んでる
+            $('<span>').attr('id','translation-object').data('translation', self).appendTo('body')
         },
         rewrite: function(results) {
             this.nodeList.forEach(function(node, i) {
                 node.nodeType === 3 ?
                     node.nodeValue = results[i].TranslatedText :
-                    node.value     = results[i].TranslatedText
+                    node.value = results[i].TranslatedText
             })
         },
         getTargetSelector: function() {
@@ -84,22 +87,23 @@
     $.translation = Plugin
 
     $(function() {
-        $('#from-en-to-ja').on('click', function() {
+        $('#from-en-to-ja').bind('click', function() {
             var subscriptionKey = $('#subscription-key').val().trim()
             if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'en', to: 'ja' })
         })
-        $('#from-ja-to-en').on('click', function() {
+        $('#from-ja-to-en').bind('click', function() {
             var subscriptionKey = $('#subscription-key').val().trim()
             if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'ja', to: 'en' })
         })
-        $(document).on('translate', function(e, self, data) {
+        $(document).bind('translate', function(e, self, data) {
             self.rewrite(data)
         })
     })
 }(jQuery)
 
 function translated(data) {
-    var translation = $('#script-translation').data('translation')
+    var translation = $('#translation-object').data('translation')
     $(document).trigger('translate', [translation, data])
-    $('#script-translation').remove()
+    $('#translation-script').remove()
+    $('#translation-object').remove()
 }
