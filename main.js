@@ -20,53 +20,54 @@
         issueAccessToken: function() {
             var self = this
             var url = 'https://api.cognitive.microsoft.com/sts/v1.0/issueToken?Subscription-Key=' + self.subscriptionKey
+            var onSuccess = function(result) {
+                logger.log('success issue access token')
+                self.accessToken = result
+                self.translate()
+            }
+            var onError = function() {
+                logger.log('fail issue access token')
+            }
+            var timeout = 10000
+
             if(window.XDomainRequest) {
-                logger.log('XDomainRequest')
                 var xdr = new XDomainRequest();
                 xdr.onload = function() {
-                    var result = JSON.parse(xdr.responseText);
-                    self.accessToken = result
-                    self.translate()
+                    onSuccess(xdr.responseText)
                 }
-                xdr.onerror = function(){
-                    logger.log('fail issue access token')
-                }
-                xdr.open('post', url);
+                xdr.onerror = onError
+                xdr.timeout = timeout
+                xdr.open('post', url)
+                xdr.send()
             } else {
                 $.ajax({
-                    type: 'POST',
+                    type: 'post',
                     url: url,
-                    timeout: 10000
-                }).success(function(data) {
-                    self.accessToken = data
-                    self.translate()
-                }).error(function() {
-                    logger.log('fail issue access token')
-                })
+                    timeout: timeout
+                }).success(onSuccess).error(onError)
             }
         },
         translate: function() {
             // Ajaxだとcors問題発生
             // 公式でもscriptタグ埋め込めと言っている
             // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx
-            var self = this
-            self.setTargetNode()
-            var texts = '[' + self.getTargetText() + ']'
+            this.setTargetNode()
+            var texts = '[' + this.getTargetText() + ']'
             var options = '{"Category": "generalnn"}'
-            var src = 'http://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
-                '?appId=Bearer ' + self.accessToken +
-                '&from=' + self.from +
-                '&to=' + self.to +
+            var src = 'https://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
+                '?appId=Bearer ' + this.accessToken +
+                '&from=' + this.from +
+                '&to=' + this.to +
                 '&texts=' + texts +
                 '&options=' + options +
                 '&oncomplete=translated'
-            $('<script>').attr({ 'id': 'translation-script', 'type': 'text/javascript', 'src': src }).data('translation', self).appendTo('body')
+            $('<script>').attr({ 'id': 'translation-script', 'type': 'text/javascript', 'src': src }).appendTo('body')
             // Tlanslationオブジェクトを使い回すために埋め込む
             // scriptタグの属性に入れてもよかったけどjquery1.6.4だとappendしたscriptタグが見えないためわざわざ別のタグで埋め込んでる
-            $('<span>').attr('id','translation-object').data('translation', self).appendTo('body')
+            $('<span>').attr('id','translation-object').data('translation', this).appendTo('body')
         },
         rewrite: function(results) {
-            this.nodeList.forEach(function(node, i) {
+            $.each(this.nodeList, function(i, node) {
                 node.nodeType === 3 ?
                     node.nodeValue = results[i].TranslatedText :
                     node.value = results[i].TranslatedText
@@ -86,7 +87,7 @@
             this.nodeList = textNodeList.toArray().concat(inputNodeList.toArray())
         },
         getTargetText: function() {
-            return this.nodeList.map(function(node) {
+            return $.map(this.nodeList, function(node) {
                 return '"' + (node.nodeType === 3 ? node.nodeValue : node.value) + '"'
             }).join(',')
         }
