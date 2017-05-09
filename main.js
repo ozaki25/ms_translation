@@ -19,19 +19,31 @@
         },
         issueAccessToken: function() {
             var self = this
-            $.ajax({
-                type: 'POST',
-                url: 'https://api.cognitive.microsoft.com/sts/v1.0/issueToken',
-                headers: {
-                    'Ocp-Apim-Subscription-Key': self.subscriptionKey
-                },
-                timeout: 10000
-            }).success(function(data) {
-                self.accessToken = data
-                self.translate()
-            }).error(function() {
-                logger.log('fail issue access token')
-            })
+            var url = 'https://api.cognitive.microsoft.com/sts/v1.0/issueToken?Subscription-Key=' + self.subscriptionKey
+            if(window.XDomainRequest) {
+                logger.log('XDomainRequest')
+                var xdr = new XDomainRequest();
+                xdr.onload = function() {
+                    var result = JSON.parse(xdr.responseText);
+                    self.accessToken = result
+                    self.translate()
+                }
+                xdr.onerror = function(){
+                    logger.log('fail issue access token')
+                }
+                xdr.open('post', url);
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: url,
+                    timeout: 10000
+                }).success(function(data) {
+                    self.accessToken = data
+                    self.translate()
+                }).error(function() {
+                    logger.log('fail issue access token')
+                })
+            }
         },
         translate: function() {
             // Ajaxだとcors問題発生
