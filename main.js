@@ -8,6 +8,7 @@
         this.subscriptionKey = options.subscriptionKey
         this.from = options.from || 'ja'
         this.to = options.to || 'en'
+        this.nodeList = []
         this.excute()
     }
 
@@ -51,26 +52,40 @@
             // Ajaxだとcors問題発生
             // 公式でもscriptタグ埋め込めと言っている
             // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx
-            this.setTargetNode()
-            var texts = '[' + this.getTargetText() + ']'
-            var options = '{"Category": "generalnn"}'
-            var src = 'https://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
-                '?appId=Bearer ' + this.accessToken +
-                '&from=' + this.from +
-                '&to=' + this.to +
-                '&texts=' + texts +
-                '&options=' + options +
-                '&oncomplete=translated'
-            $('<script>').attr({ 'id': 'translation-script', 'type': 'text/javascript', 'src': src }).appendTo('body')
-            // Tlanslationオブジェクトを使い回すために埋め込む
-            // scriptタグの属性に入れてもよかったけどjquery1.6.4だとappendしたscriptタグが見えないためわざわざ別のタグで埋め込んでる
-            $('<span>').attr('id','translation-object').data('translation', this).appendTo('body')
+            var self = this
+            self.setTargetNode()
+            $.each(self.nodeList, function(i, nodeListBlock) {
+                self.createCallback(i)
+                var texts = '[' + self.getTargetText(nodeListBlock) + ']'
+                var options = '{"Category": "generalnn"}'
+                var src = 'https://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
+                    '?appId=Bearer ' + self.accessToken +
+                    '&from=' + self.from +
+                    '&to=' + self.to +
+                    '&texts=' + texts +
+                    '&options=' + options +
+                    '&oncomplete=translated' + i
+                $('<script>').attr({ 'id': 'translation-script-' + i, 'type': 'text/javascript', 'src': src }).appendTo('body')
+                // Tlanslationオブジェクトを使い回すために埋め込む
+                // scriptタグの属性に入れてもよかったけどjquery1.6.4だとappendしたscriptタグが見えないためわざわざ別のタグで埋め込んでる
+                $('<span>').attr('id','translation-object-' + i).data('translation', self).appendTo('body')
+            })
         },
-        rewrite: function(results) {
-            $.each(this.nodeList, function(i, node) {
+        createCallback: function(i) {
+            var callbackName = 'translated' + i
+            window[callbackName] = function(data) {
+                var translation = $('#translation-object-' + i).data('translation')
+                $(document).trigger('translate', [translation, data, i])
+                $('#translation-script-' + i).remove()
+                $('#translation-object-' + i).remove()
+                delete window[callbackName]
+            }
+        },
+        rewrite: function(results, i) {
+            $.each(this.nodeList[i], function(j, node) {
                 node.nodeType === 3 ?
-                    node.nodeValue = results[i].TranslatedText :
-                    node.value = results[i].TranslatedText
+                    node.nodeValue = results[j].TranslatedText :
+                    node.value = results[j].TranslatedText
             })
         },
         getTargetSelector: function() {
@@ -84,11 +99,19 @@
             var inputNodeList = $('input').filter(function() {
                 return this.type === 'button' && !!$.trim(this.value)
             })
-            this.nodeList = textNodeList.toArray().concat(inputNodeList.toArray())
+            var totalNode = textNodeList.toArray().concat(inputNodeList.toArray())
+            // 送信量の上限は、要素数:2000、文字数:10000
+            // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx#parameters
+            // 文字数チェックしたあとnode分割はきついから少なめの要素数で分割して対応
+            var size = 100
+            for(var i = 0; i < Math.ceil(totalNode.length / size); i++) {
+                this.nodeList.push(totalNode.slice(i * size, i * size + size))
+            }
         },
-        getTargetText: function() {
-            return $.map(this.nodeList, function(node) {
-                return '"' + (node.nodeType === 3 ? node.nodeValue : node.value) + '"'
+        getTargetText: function(nodeList) {
+            return $.map(nodeList, function(node) {
+                var text = node.nodeType === 3 ? $.trim(node.nodeValue) : $.trim(node.value)
+                return '"' + text + '"'
             }).join(',')
         }
     }
@@ -108,15 +131,8 @@
             var subscriptionKey = $.trim($('#subscription-key').val())
             if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'ja', to: 'en' })
         })
-        $(document).bind('translate', function(e, self, data) {
-            self.rewrite(data)
+        $(document).bind('translate', function(e, self, data, i) {
+            self.rewrite(data, i)
         })
     })
 }(jQuery)
-
-function translated(data) {
-    var translation = $('#translation-object').data('translation')
-    $(document).trigger('translate', [translation, data])
-    $('#translation-script').remove()
-    $('#translation-object').remove()
-}
