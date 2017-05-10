@@ -100,7 +100,10 @@
                 return this.type === 'button' && !!$.trim(this.value)
             })
             var totalNode = textNodeList.toArray().concat(inputNodeList.toArray())
-            var size = 2//100
+            // 送信量の上限は、要素数:2000、文字数:10000
+            // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx#parameters
+            // 文字数チェックしたあとnode分割はきついから少なめの要素数で分割して対応
+            var size = 100
             for(var i = 0; i < Math.ceil(totalNode.length / size); i++) {
                 this.nodeList.push(totalNode.slice(i * size, i * size + size))
             }
