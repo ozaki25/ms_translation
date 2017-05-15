@@ -60,7 +60,7 @@
                 var options = '{"Category": "generalnn"}'
                 var src = 'https://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
                     '?appId=Bearer ' + encodeURIComponent(self.accessToken) +
-                    '&from=' + encodeURIComponentself.from) +
+                    '&from=' + encodeURIComponent(self.from) +
                     '&to=' + encodeURIComponent(self.to) +
                     '&texts=' + encodeURIComponent(texts) +
                     '&options=' + encodeURIComponent(options) +
