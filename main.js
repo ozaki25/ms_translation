@@ -29,7 +29,7 @@
             var onError = function() {
                 logger.log('fail issue access token')
             }
-            var timeout = 10000
+            var timeout = 20000
 
             if(window.XDomainRequest) {
                 var xdr = new XDomainRequest();
@@ -59,11 +59,11 @@
                 var texts = '[' + self.getTargetText(nodeListBlock) + ']'
                 var options = '{"Category": "generalnn"}'
                 var src = 'https://api.microsofttranslator.com/V2/Ajax.svc/TranslateArray' +
-                    '?appId=Bearer ' + self.accessToken +
-                    '&from=' + self.from +
-                    '&to=' + self.to +
-                    '&texts=' + texts +
-                    '&options=' + options +
+                    '?appId=Bearer ' + encodeURIComponent(self.accessToken) +
+                    '&from=' + encodeURIComponentself.from) +
+                    '&to=' + encodeURIComponent(self.to) +
+                    '&texts=' + encodeURIComponent(texts) +
+                    '&options=' + encodeURIComponent(options) +
                     '&oncomplete=translated' + i
                 $('<script>').attr({ 'id': 'translation-script-' + i, 'type': 'text/javascript', 'src': src }).appendTo('body')
                 // Tlanslationオブジェクトを使い回すために埋め込む
