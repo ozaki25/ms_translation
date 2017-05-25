@@ -111,7 +111,8 @@
         getTargetText: function(nodeList) {
             return $.map(nodeList, function(node) {
                 var text = node.nodeType === 3 ? $.trim(node.nodeValue) : $.trim(node.value)
-                return '"' + text + '"'
+                // 改行があると翻訳処理でエラーがでるので諦めて半角スペースに変換
+                return '"' + text.replace(/\r?\n/g, ' ') + '"'
             }).join(',')
         }
     }
