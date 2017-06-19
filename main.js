@@ -8,6 +8,7 @@
         this.subscriptionKey = options.subscriptionKey
         this.from = options.from || 'ja'
         this.to = options.to || 'en'
+        this.omitSelector = options.omitSelector ? options.omitSelector + ',script' : 'script'
         this.nodeList = []
         this.excute()
     }
@@ -93,7 +94,8 @@
         },
         setTargetNode: function() {
             var selector = this.getTargetSelector()
-            var textNodeList = $(selector).contents().filter(function() {
+            var omitSelector = this.omitSelector
+            var textNodeList = $(selector).not(omitSelector).contents().filter(function() {
                 return this.nodeType === 3 && !!$.trim(this.nodeValue)
             })
             var inputNodeList = $('input').filter(function() {
