@@ -126,14 +126,6 @@
     $.translation = Plugin
 
     $(function() {
-        $('#from-en-to-ja').bind('click', function() {
-            var subscriptionKey = $.trim($('#subscription-key').val())
-            if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'en', to: 'ja' })
-        })
-        $('#from-ja-to-en').bind('click', function() {
-            var subscriptionKey = $.trim($('#subscription-key').val())
-            if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'ja', to: 'en' })
-        })
         $(document).bind('translate', function(e, self, data, i) {
             self.rewrite(data, i)
         })

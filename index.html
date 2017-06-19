@@ -1,11 +1,30 @@
 <meta charset="utf-8">
 <script src="jquery-1.6.4.js"></script>
 <script src="main.js"></script>
+<script>
+$(function() {
+    $('#from-en-to-ja').bind('click', function() {
+        var subscriptionKey = $.trim($('#subscription-key').val())
+        var omitSelector = $.trim($('#omit-selector').val())
+        if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'en', to: 'ja', omitSelector: omitSelector })
+    })
+    $('#from-ja-to-en').bind('click', function() {
+        var subscriptionKey = $.trim($('#subscription-key').val())
+        var omitSelector = $.trim($('#omit-selector').val())
+        if(subscriptionKey) $.translation({ subscriptionKey: subscriptionKey, from: 'ja', to: 'en', omitSelector: omitSelector })
+    })
+})
+</script>
 <h1>こんにちは</h1>
 <p>私はポー太郎です</p>
 <p>私はポー太郎ではありません</p>
 <pre>こんにちは
 ポー太郎です</pre>
+<h2>こんにちは</h2>
+<h3>こんにちは</h3>
+<h4>こんにちは</h4>
+<h5>こんにちは</h5>
 <input id="subscription-key">
+<input id="omit-selector">
 <input type="button" id="from-en-to-ja" value="日本語">
 <input type="button" id="from-ja-to-en" value="English">
