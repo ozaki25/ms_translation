@@ -23,12 +23,12 @@
             var self = this
             var url = 'https://api.cognitive.microsoft.com/sts/v1.0/issueToken?Subscription-Key=' + self.subscriptionKey
             var onSuccess = function(result) {
-                logger.log('success issue access token')
                 self.accessToken = result
                 self.translate()
             }
-            var onError = function() {
-                logger.log('fail issue access token')
+            var onError = function(data, status,  error) {
+                logger.log(status)
+                logger.log(error)
             }
             var timeout = 20000
 
@@ -50,8 +50,6 @@
             }
         },
         translate: function() {
-            // Ajaxだとcors問題発生
-            // 公式でもscriptタグ埋め込めと言っている
             // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx
             var self = this
             self.setTargetNode()
