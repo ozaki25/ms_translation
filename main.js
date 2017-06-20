@@ -17,7 +17,26 @@
 
     Translation.prototype = {
         excute: function() {
-            this.issueAccessToken()
+            this.hasLocalStorage() ? this.useLocalStorageData() : this.issueAccessToken()
+        },
+        hasLocalStorage: function() {
+            var key = location.href + this.from + this.to
+            return !!localStorage[key]
+        },
+        useLocalStorageData: function() {
+            var key = location.href + this.from + this.to
+            var nodeValues = JSON.parse(localStorage.getItem(key))
+            var count = 0
+            this.setTargetNode()
+            this.setLocalStorage()
+            $.each(this.nodeList, function(i, nodeListBlock) {
+                $.each(nodeListBlock, function(j, node) {
+                    node.nodeType === 3 ?
+                        node.nodeValue = nodeValues[count] :
+                        node.value = nodeValues[count]
+                    count++;
+                })
+            })
         },
         issueAccessToken: function() {
             var self = this
@@ -53,6 +72,7 @@
             // https://msdn.microsoft.com/ja-jp/library/ff512407.aspx
             var self = this
             self.setTargetNode()
+            self.setLocalStorage()
             $.each(self.nodeList, function(i, nodeListBlock) {
                 self.createCallback(i)
                 var texts = '[' + self.getTargetText(nodeListBlock) + ']'
@@ -114,6 +134,15 @@
                 // 改行があると翻訳処理でエラーがでるので諦めて半角スペースに変換
                 return '"' + text.replace(/\r?\n/g, ' ') + '"'
             }).join(',')
+        },
+        setLocalStorage: function() {
+            var nodeValues = $.map(this.nodeList, function(nodeListBlock) {
+                return $.map(nodeListBlock, function(node) {
+                    return node.nodeType === 3 ? node.nodeValue : node.value
+                })
+            })
+            var key = location.href + this.to + this.from
+            localStorage.setItem(key, JSON.stringify(nodeValues))
         }
     }
 
