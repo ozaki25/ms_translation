@@ -141,7 +141,7 @@
         hasTranslatedInLocalStorage: function() {
             var key = window.location.href + this.from + this.to
             return !!localStorage[key]
-        },
+        }
     }
 
     function Plugin(options) {
