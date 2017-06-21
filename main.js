@@ -9,7 +9,7 @@
         this.from = options.from || 'ja'
         this.to = options.to || 'en'
         this.omitSelector = options.omitSelector ? options.omitSelector + ',script' : 'script'
-        this.onlySetLocalStorage = options.onlySetLocalStorage
+        this.onlySaveText = options.onlySaveText
         this.currentLang = options.currentLang
         this.nodeList = []
         this.rewiteCount = 0
@@ -19,7 +19,7 @@
     Translation.prototype = {
         excute: function() {
             this.setTargetNode()
-            if(this.onlySetLocalStorage) {
+            if(this.onlySaveText) {
                 if(this.currentLang) {
                     this.setLocalStorage(this.currentLang)
                 } else {

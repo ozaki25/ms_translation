@@ -3,7 +3,7 @@
 <script src="main.js"></script>
 <script>
 $(function() {
-    $.translation({ onlySetLocalStorage: true, currentLang: 'ja'})
+    $.translation({ onlySaveText: true, currentLang: 'ja'})
 
     $('#from-en-to-ja').bind('click', function() {
         var subscriptionKey = $.trim($('#subscription-key').val())
