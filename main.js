@@ -9,21 +9,32 @@
         this.from = options.from || 'ja'
         this.to = options.to || 'en'
         this.omitSelector = options.omitSelector ? options.omitSelector + ',script' : 'script'
+        this.onlySaveText = options.onlySaveText
+        this.currentLang = options.currentLang
         this.nodeList = []
+        this.rewiteCount = 0
         this.excute()
     }
 
     Translation.prototype = {
         excute: function() {
-            this.setup()
-            this.hasTranslatedInLocalStorage() ? this.useLocalStorageData() : this.issueAccessToken()
-        },
-        setup: function() {
             this.setTargetNode()
-            this.setLocalStorage()
+            if(this.onlySaveText) {
+                if(this.currentLang) {
+                    this.setLocalStorage(this.currentLang)
+                } else {
+                    logger.log('incorrect parameter currentLang')
+                }
+            } else {
+                if(this.hasTranslatedInLocalStorage()) {
+                    this.useLocalStorageData()
+                } else {
+                    this.issueAccessToken()
+                }
+            }
         },
         useLocalStorageData: function() {
-            var key = window.location.href + this.from + this.to
+            var key = window.location.href + this.to + this.omitSelector
             var values = JSON.parse(localStorage.getItem(key))
             var count = 0
             logger.log('use localstorage data')
@@ -105,6 +116,8 @@
                     node.nodeValue = results[i].TranslatedText :
                     node.value = results[i].TranslatedText
             })
+            this.rewiteCount += 1
+            if(this.rewiteCount === this.nodeList.length) this.setLocalStorage(this.to)
         },
         setTargetNode: function() {
             var textNodeList = $('body *').not(this.omitSelector).contents().filter(function() {
@@ -129,8 +142,8 @@
                 return '"' + text.replace(/\r?\n/g, ' ') + '"'
             }).join(',')
         },
-        setLocalStorage: function() {
-            var key = window.location.href + this.to + this.from
+        setLocalStorage: function(lang) {
+            var key = window.location.href + lang + this.omitSelector
             var nodeValues = $.map(this.nodeList, function(nodeListBlock) {
                 return $.map(nodeListBlock, function(node) {
                     return node.nodeType === 3 ? node.nodeValue : node.value
@@ -139,7 +152,7 @@
             localStorage.setItem(key, JSON.stringify(nodeValues))
         },
         hasTranslatedInLocalStorage: function() {
-            var key = window.location.href + this.from + this.to
+            var key = window.location.href + this.to + this.omitSelector
             return !!localStorage[key]
         }
     }
