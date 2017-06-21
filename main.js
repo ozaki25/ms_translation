@@ -110,7 +110,7 @@
             var textNodeList = $('body *').not(this.omitSelector).contents().filter(function() {
                 return this.nodeType === 3 && !!$.trim(this.nodeValue)
             })
-            var inputNodeList = $('input').filter(function() {
+            var inputNodeList = $('input').not(this.omitSelector).filter(function() {
                 return this.type === 'button' && !!$.trim(this.value)
             })
             var totalNode = textNodeList.toArray().concat(inputNodeList.toArray())
